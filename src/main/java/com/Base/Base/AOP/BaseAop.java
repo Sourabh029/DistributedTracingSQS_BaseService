@@ -59,7 +59,7 @@ public class BaseAop {
         }
     }
 
-    private Message extractMessageFromArgs(Object[] args) {
+    public Message extractMessageFromArgs(Object[] args) {
         return Arrays.stream(args)
                 .filter(arg -> arg instanceof Message)
                 .map(arg -> (Message) arg)
