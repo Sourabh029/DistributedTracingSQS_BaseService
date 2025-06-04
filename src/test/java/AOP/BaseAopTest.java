@@ -22,8 +22,8 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 public class BaseAopTest {
@@ -94,6 +94,33 @@ public class BaseAopTest {
 
         tracingAspect.traceSqsMessage(joinPoint);
 
+    }
+
+    @Test
+    void testTraceContextBuilderChaining() {
+        // Given
+        String traceId = "abc123";
+        String spanId = "def456";
+
+        // When
+        when(tracer.traceContextBuilder()).thenReturn(traceContextBuilder);
+        when(traceContextBuilder.traceId(traceId)).thenReturn(traceContextBuilder);
+        when(traceContextBuilder.spanId(spanId)).thenReturn(traceContextBuilder);
+        when(traceContextBuilder.build()).thenReturn(traceContext);
+
+        // Actual call
+        TraceContext parentContext = tracer.traceContextBuilder()
+                .traceId(traceId)
+                .spanId(spanId)
+                .build();
+
+        // Then
+        verify(tracer).traceContextBuilder();
+        verify(traceContextBuilder).traceId(traceId);
+        verify(traceContextBuilder).spanId(spanId);
+        verify(traceContextBuilder).build();
+
+        assertSame(traceContext, parentContext, "TraceContext should match the mocked one");
     }
 
     static class DummyHandler {
